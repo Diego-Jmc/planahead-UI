@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useAuth0 } from '@auth0/auth0-react'; // Import Auth0 hook
 import crypto from 'crypto';
 
 const Container = styled.div`
-background-image: url('/back.jpg');
-background-size: cover;
-background-position: center;
+  background-image: url('/background.jpg');
+  background-size: cover;
+  background-position: center;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -20,14 +21,13 @@ const Card = styled.div`
   background-color: white;
 `;
 const Error = styled.div`
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  color: red
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: red;
 `;
 
 const Tab = styled.button`
-  background- image: url();
   background-color: transparent;
   border: none;
   padding: 8px 16px;
@@ -67,7 +67,8 @@ const Button = styled.button`
   width: 100%;
   padding: 8px;
   border-radius: 4px;
-  background-color: #4Caf50;color: white;
+  background-color: #0a6244;
+  color: white;
   font-size: 16px;
   cursor: pointer;
   border: none;
@@ -85,30 +86,28 @@ const LoginPage = () => {
   const loginTabId = crypto.randomBytes(10).toString('hex');
   const registerTabId = crypto.randomBytes(10).toString('hex');
 
-  const handleLogin = async (event) => {
+  // Use Auth0 hook
+  const { loginWithRedirect, user } = useAuth0();
 
+  const handleLogin = async (event) => {
     event.preventDefault();
     const username = document.getElementById(`login-username`).value;
     const password = document.getElementById(`login-password`).value;
 
-
-    const response = await fetch('http://localhost:3001/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username, password })
-    });
-    if (response.ok) {
-
-    } else {
+    try {
+      // Use Auth0 loginWithRedirect method
+      await loginWithRedirect({
+        username,
+        password,
+        redirectUri: window.location.origin,
+      });
+    } catch (error) {
+      console.error(error);
       setError1(true);
     }
   };
 
-
   const handleRegister = async (event) => {
-
     event.preventDefault();
     const username = document.getElementById(`register-username`).value;
     const password = document.getElementById(`register-pass`).value;
@@ -119,27 +118,23 @@ const LoginPage = () => {
       setError2(true);
       return;
     }
-    const response = await fetch('http://localhost:3001/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username, password })
-    });
 
-    if (response.ok) {
-      // Handle successful registration
-    } else {
+    try {
+      // Use Auth0 loginWithRedirect method
+      await loginWithRedirect({
+        username,
+        password,
+        redirectUri: window.location.origin,
+      });
+    } catch (error) {
+      console.error(error);
       setError2(true);
     }
-
   };
 
   return (
-
     <Container>
       <Card>
-
         <Tab className={activeTab === 'login' ? 'active' : ''} onClick={() => setActiveTab('login')}>
           Login
         </Tab>
@@ -150,13 +145,17 @@ const LoginPage = () => {
           <form onSubmit={handleLogin}>
             <Input type="text" id="login-username" name="username" placeholder="Username" />
             <Input type="password" id="login-password" name="password" placeholder="Password" />
-            <Button type="submit">Login</Button>
+            <div style={{ marginBottom: '16px' }}> {/* Add margin bottom */}
+      <Button type="submit">Login</Button>
+    </div>
+    <div style={{ marginBottom: '16px' }}> {/* Add margin bottom */}
+      <Button type="submit">Login with Auth0</Button>
+    </div>
             <Error>
               {error1 && <div>The username or password is incorrect.</div>}
             </Error>
           </form>
         </TabContent>
-
         <TabContent className={activeTab === 'register' ? 'active' : ''} id={registerTabId}>
           <form onSubmit={handleRegister}>
             <Input type="text" id="register-username" name="username" placeholder="Username" />
@@ -168,10 +167,8 @@ const LoginPage = () => {
             </Error>
           </form>
         </TabContent>
-
       </Card>
     </Container>
-
   );
 };
 

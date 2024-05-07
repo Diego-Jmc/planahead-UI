@@ -9,18 +9,22 @@ import { BsInfoSquare, BsEnvelopeAt, BsCalendar2} from 'react-icons/bs'
 import logo from '../../assets/img/logo/logo.png'
 
 
+
+
 export default function Sidebar({ show, setter }) {
     const router = useRouter();
 
+    
+
     // Define our base class
-    const className = "bg-light w-[250px] transition-[margin-left] ease-in-out duration-500 fixed md:static top-0 bottom-0 left-0 z-40";
+    const className = "bg-[#0a6244] text-white w-[250px] transition-[margin-left] ease-in-out duration-500 fixed md:static top-0 bottom-0 left-0 z-40";
     // Append class based on state of sidebar visiblity
     const appendClass = show ? " ml-0" : " ml-[-250px] md:ml-0";
 
     // Clickable menu items
     const MenuItem = ({ icon, name, route }) => {
         // Highlight menu item based on currently displayed route
-        const colorClass = router.pathname === route ? "text-black" : "text-black/50 hover:text-black";
+        const colorClass = router.pathname === route ? "text-white" : "text-white/75 hover:text-white";
 
         return (
             <Link
@@ -54,10 +58,10 @@ export default function Sidebar({ show, setter }) {
                 <div className="p-2 flex">
                     <Link href="/">
                         {/*eslint-disable-next-line*/}
-                        <img src={logo.src} alt="Company Logo" width={100} height={100} className='justify-content-center' />
+                        <img src={logo.src} alt="Company Logo" width={150} height={150} className='justify-content-center item-center' />
                     </Link>
                 </div>
-                <div className="flex flex-col">
+                <div className="text-white flex flex-col">
                     <MenuItem
                         name="Home"
                         route="/"
