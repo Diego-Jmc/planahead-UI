@@ -8,16 +8,11 @@ import { BsInfoSquare, BsEnvelopeAt, BsCalendar2} from 'react-icons/bs'
 
 import logo from '../../assets/img/logo/logo.png'
 
-
-
-
 export default function Sidebar({ show, setter }) {
     const router = useRouter();
 
-    
-
     // Define our base class
-    const className = "bg-[#0a6244] text-white w-[250px] transition-[margin-left] ease-in-out duration-500 fixed md:static top-0 bottom-0 left-0 z-40";
+    const className = "bg-[#008000] text-white w-[250px] transition-[margin-left] ease-in-out duration-500 fixed md:static top-0 bottom-0 left-0 z-40";
     // Append class based on state of sidebar visiblity
     const appendClass = show ? " ml-0" : " ml-[-250px] md:ml-0";
 
