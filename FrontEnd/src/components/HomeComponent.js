@@ -202,5 +202,6 @@ export default function HomePage({ title }) {
             </div>
 
         </Layout>
-    )
+    );
 }
+
