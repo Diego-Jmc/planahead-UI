@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useAuth0 } from '@auth0/auth0-react'; // Import Auth0 hook
+import { useAuth0 } from '@auth0/auth0-react'; 
 import crypto from 'crypto';
+import axios from 'axios'
+import Cookies from 'js-cookie'
+import { useRouter } from 'next/navigation'
 
 const Container = styled.div`
   background-image: url('/background.jpg');
@@ -80,31 +83,56 @@ const Button = styled.button`
 `;
 
 const LoginPage = () => {
+
   const [error1, setError1] = useState(false);
   const [error2, setError2] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
   const loginTabId = crypto.randomBytes(10).toString('hex');
   const registerTabId = crypto.randomBytes(10).toString('hex');
+  const router = useRouter()
+
+ // user states
+
+ const [email, setEmail] = useState('');
+ const [password, setPassword] = useState('');
+
 
   // Use Auth0 hook
   const { loginWithRedirect, user } = useAuth0();
 
+
+  const handleChangeLogin = (e) => {
+    const { name, value } = e.target;
+    if (name === 'email') {
+      setEmail(value);
+    } else if (name === 'password') {
+      setPassword(value);
+    }
+  };
+
   const handleLogin = async (event) => {
     event.preventDefault();
-    const username = document.getElementById(`login-username`).value;
-    const password = document.getElementById(`login-password`).value;
-
-    try {
-      // Use Auth0 loginWithRedirect method
-      await loginWithRedirect({
-        username,
-        password,
-        redirectUri: window.location.origin,
-      });
-    } catch (error) {
-      console.error(error);
-      setError1(true);
+    
+    const body = {
+      "email": email,
+      "password": password
     }
+
+    axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/login`,body)
+    .then(res=>{  
+      
+        if(res.status == 200){
+          Cookies.set('plan_ahead_user_token', res.data.token)  
+          Cookies.set('plan_ahead_user_email', res.data.email)
+          router.push('/')
+        }
+      
+    }).catch(err=>{
+      console.log(err)
+      setError1(true)
+    })
+
+
   };
 
   const handleRegister = async (event) => {
@@ -143,16 +171,16 @@ const LoginPage = () => {
         </Tab>
         <TabContent className={activeTab === 'login' ? 'active' : ''} id={loginTabId}>
           <form onSubmit={handleLogin}>
-            <Input type="text" id="login-username" name="username" placeholder="Username" />
-            <Input type="password" id="login-password" name="password" placeholder="Password" />
+            <Input type="email" id="login-email" name="email" onChange={handleChangeLogin} placeholder="Email" />
+            <Input type="password" id="login-password" name="password" onChange={handleChangeLogin} placeholder="Password" />
             <div style={{ marginBottom: '16px' }}> {/* Add margin bottom */}
-      <Button type="submit">Login</Button>
-    </div>
-    <div style={{ marginBottom: '16px' }}> {/* Add margin bottom */}
-      <Button type="submit">Login with Auth0</Button>
-    </div>
+              <Button type="submit">Login</Button>
+            </div>
+            <div style={{ marginBottom: '16px' }}> {/* Add margin bottom */}
+              <Button type="submit">Login with Auth0</Button>
+            </div>
             <Error>
-              {error1 && <div>The username or password is incorrect.</div>}
+              {error1 && <div>The email or password is incorrect.</div>}
             </Error>
           </form>
         </TabContent>
