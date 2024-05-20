@@ -1,10 +1,24 @@
-// This line is no longer needed as we're not using JSX syntax
-// // import React from 'react';
-
+import React, { useEffect } from 'react'
 import Layout from './Layuot'
-import React from 'react';
+import isUserAuth from '../utils/auth'
+import { useRouter } from 'next/navigation'
 
 export default function HomePage({ title }) {
+
+    const router = useRouter()
+
+    useEffect(() => {
+
+            if (!isUserAuth()) {
+                console.log('user is not authenticated');
+                router.push('/login');
+            } else {
+                console.log('user is authenticated');
+            }
+        
+    }, [isUserAuth]);
+
+
     return (
         <Layout
             pageTitle={title}

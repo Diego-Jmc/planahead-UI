@@ -6,10 +6,13 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useRouter } from 'next/navigation'
+import isUserAuth from '../utils/auth'
 
 import './../assets/css/calendar.css'
 
 export default function CalendarPage({ title }) {
+  const router = useRouter()
   const [showModal, setShowModal] = useState(false);
   const [eventData, setEventData] = useState({
     title: '',
@@ -17,72 +20,31 @@ export default function CalendarPage({ title }) {
     end: ''
   });
   const [eventList, setEventList] = useState([]);
+
   useEffect(() => {
-    fetchEvents();
-  }, []);
+
+    if (!isUserAuth()) {
+      console.log('user is not authenticated');
+      router.push('/login');
+    } else {
+      fetchEvents();
+      console.log('user is authenticated');
+    }
+
+  }, [isUserAuth]);
 
   const fetchEvents = async () => {
     try {
-      // Replace with your API logic if fetching from a server
-      // const response = await fetch('http://localhost:3001/api/tasks'); // Corrected fetch URL
-      // if (response.ok) {
-      //     const data = await response.json();
-      //     setEventList(data);
-      // } else {
-      //     console.error('Failed to fetch events:', response.statusText);
-      // }
-
-      const mockData = [
-        {
-          title: 'CS 344: Algorithms Lecture',
-          start: new Date('2024-05-08T09:00:00').toISOString(),
-          end: new Date('2024-05-08T10:30:00').toISOString(),
-          backgroundColor: '#ffc107',
-        },{
-          title: 'Chemistry Lab (Section A)',
-          start: new Date('2024-05-15T14:00:00').toISOString(),
-          end: new Date('2024-05-09T16:00:00').toISOString(),
-          backgroundColor: '#ffc107',
-        },{
-          title: 'Student Government Meeting',
-          start: new Date('2024-05-10T17:00:00').toISOString(),
-          end: new Date('2024-05-10T18:30:00').toISOString(),
-          backgroundColor: '#ffc107',
-        },{
-          title: 'Career Fair - Engineering & Tech',
-          start: new Date('2024-05-21T11:00:00').toISOString(),
-          end: new Date('2024-05-11T14:00:00').toISOString(),
-          backgroundColor: '#ffc107',
-        },{
-          title: 'Office Hours - Professor Smith (History)',
-          start: new Date('2024-05-13T12:00:00').toISOString(),
-          end: new Date('2024-05-13T13:00:00').toISOString(), // No formatting call here
-        },
-      ];
-      setEventList(mockData);
+      const response = await fetch('http://localhost:3001/api/getPopulated'); // Corrected fetch URL
+      if (response.ok) {
+        const data = await response.json();
+        setEventList(data);
+      } else {
+        console.error('Failed to fetch events:', response.statusText);
+      }
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  };
-
-  const formatDate = (dateString) => {
-    // Check if dateString is a valid date string
-    if (!dateString || isNaN(Date.parse(dateString))) {
-      return 'Invalid Date';
-    }
-    
-    const date = new Date(dateString); // Convert the date string to a Date object
-  
-    const options = {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    };
-  
-    return new Intl.DateTimeFormat('en-GB', options).format(date); // Format the date
   };
 
   const handleInputChange = (e) => {
@@ -127,9 +89,7 @@ export default function CalendarPage({ title }) {
                 <ul>
                   {eventList.map((event, index) => (
                     <li key={index}>
-                      {event.title} <br>
-                      </br>- {formatDate(event.start)} to {formatDate(event.end)}
-                      <hr/>
+                      {event.title} - {event.start} to {event.end}
                     </li>
                   ))}
                 </ul>
