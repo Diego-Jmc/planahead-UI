@@ -117,13 +117,14 @@ const LoginPage = () => {
       "email": email,
       "password": password
     }
-
     axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/login`,body)
     .then(res=>{  
       
         if(res.status == 200){
+          console.log(res.data)
           Cookies.set('plan_ahead_user_token', res.data.token)  
-          Cookies.set('plan_ahead_user_email', res.data.email)
+          Cookies.set('plan_ahead_user_id', res.data.userId)
+          
           router.push('/')
         }
       
