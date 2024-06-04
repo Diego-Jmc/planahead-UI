@@ -109,3 +109,19 @@ a {
     color-scheme: dark;
   }
 }
+
+@media only screen and (max-width: 600px) {
+  .hide-on-mobile {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .fc-toolbar-chunk .fc-button-group .fc-timeGridDay-button{
+      display: none;
+  }
+  .fc-toolbar-chunk .fc-button-group .fc-dayGridMonth-button{
+    display: none;
+}
+  
+}

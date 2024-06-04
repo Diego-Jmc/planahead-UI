@@ -118,19 +118,27 @@ const LoginPage = () => {
       "password": password
     }
 
-    axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/login`,body)
-    .then(res=>{  
-      
-        if(res.status == 200){
-          Cookies.set('plan_ahead_user_token', res.data.token)  
-          Cookies.set('plan_ahead_user_email', res.data.email)
-          router.push('/')
-        }
-      
-    }).catch(err=>{
-      console.log(err)
-      setError1(true)
+    const loginUrl = `http://localhost:3001/login`;
+
+    await axios.post(loginUrl, body)
+    .then(res => {  
+      if (res.status === 200) {
+        const { token, email } = res.data;
+        Cookies.set('plan_ahead_user_token', token);  
+        Cookies.set('plan_ahead_user_email', email);
+        router.push('/');
+      } else {
+        // Handle unexpected status code
+        console.error('Unexpected status code:', res.status);
+        setError1(true);
+      }
     })
+    .catch(err => {
+      // Handle Axios request error
+      console.error('Axios request error:', err);
+      setError1(true);
+    });
+
 
 
   };
