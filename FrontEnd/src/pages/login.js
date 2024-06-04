@@ -138,6 +138,12 @@ const LoginPage = () => {
       console.log(err)
       setError1(true)
     })
+    .catch(err => {
+      // Handle Axios request error
+      console.error('Axios request error:', err);
+      setError1(true);
+    });
+
 
 
   };

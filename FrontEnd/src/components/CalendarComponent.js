@@ -8,8 +8,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from 'next/navigation'
 import isUserAuth from '../utils/auth'
-
-import './../assets/css/calendar.css'
+import Cookies from "js-cookie"
 
 export default function CalendarPage({ title }) {
 <<<<<<< HEAD
@@ -39,7 +38,12 @@ export default function CalendarPage({ title }) {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/getPopulated'); // Corrected fetch URL
+      const token = Cookies.get('plan_ahead_user_token');
+      const response = await fetch('http://localhost:3001/api/tasks', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setEventList(data);
@@ -95,6 +99,7 @@ export default function CalendarPage({ title }) {
       console.error('Error fetching events:', error);
     }
   };
+  
 
 <<<<<<< HEAD
 =======
@@ -186,7 +191,7 @@ export default function CalendarPage({ title }) {
                   }}
                   customButtons={{
                     addEvent: {
-                      text: 'add event',
+                      text: 'Add event',
                       click: () => setShowModal(true)
                     }
                   }}
