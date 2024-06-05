@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useAuth0 } from '@auth0/auth0-react'; 
+import { useAuth0 } from '@auth0/auth0-react';
 import crypto from 'crypto';
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
+//import { GoogleSignInButton } from "../components/authButton";
+import { signIn } from "next-auth/react";
 
 const Container = styled.div`
   background-image: url('/background.jpg');
@@ -91,14 +93,19 @@ const LoginPage = () => {
   const registerTabId = crypto.randomBytes(10).toString('hex');
   const router = useRouter()
 
- // user states
+  // user states
 
- const [email, setEmail] = useState('');
- const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
 
   // Use Auth0 hook
   const { loginWithRedirect, user } = useAuth0();
+
+  const  handleOAuth = async (e) => {
+    await signIn("google", { callbackUrl: "/dashboard" });
+
+  }
 
 
   const handleChangeLogin = (e) => {
@@ -112,26 +119,26 @@ const LoginPage = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    
+
     const body = {
       "email": email,
       "password": password
     }
-    axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/login`,body)
-    .then(res=>{  
-      
-        if(res.status == 200){
+    axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/login`, body)
+      .then(res => {
+
+        if (res.status == 200) {
           console.log(res.data)
-          Cookies.set('plan_ahead_user_token', res.data.token)  
+          Cookies.set('plan_ahead_user_token', res.data.token)
           Cookies.set('plan_ahead_user_id', res.data.userId)
-          
+
           router.push('/')
         }
-      
-    }).catch(err=>{
-      console.log(err)
-      setError1(true)
-    })
+
+      }).catch(err => {
+        console.log(err)
+        setError1(true)
+      })
 
 
   };
@@ -171,6 +178,7 @@ const LoginPage = () => {
           Register
         </Tab>
         <TabContent className={activeTab === 'login' ? 'active' : ''} id={loginTabId}>
+
           <form onSubmit={handleLogin}>
             <Input type="email" id="login-email" name="email" onChange={handleChangeLogin} placeholder="Email" />
             <Input type="password" id="login-password" name="password" onChange={handleChangeLogin} placeholder="Password" />
@@ -179,6 +187,14 @@ const LoginPage = () => {
             </div>
             <div style={{ marginBottom: '16px' }}> {/* Add margin bottom */}
               <Button type="submit">Login with Auth0</Button>
+
+              <button
+                onClick={handleOAuth}
+                className="w-full flex items-center font-semibold justify-center h-14 px-6 mt-4 text-xl  transition-colors duration-300 bg-white border-2 border-black text-black rounded-lg focus:shadow-outline hover:bg-slate-200"
+              >
+                <span className="ml-4">Continue with Google</span>
+              </button>
+
             </div>
             <Error>
               {error1 && <div>The email or password is incorrect.</div>}
