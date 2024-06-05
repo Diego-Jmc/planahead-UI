@@ -10,9 +10,12 @@ import { useRouter } from 'next/navigation'
 import isUserAuth from '../utils/auth'
 import Cookies from "js-cookie"
 
+
 export default function CalendarPage({ title }) {
-  const router = useRouter()
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+
+  const [todayEvents, setTodayEvents] = useState([]);
   const [eventData, setEventData] = useState({
     title: '',
     start: '',
@@ -21,29 +24,25 @@ export default function CalendarPage({ title }) {
   const [eventList, setEventList] = useState([]);
 
   useEffect(() => {
-
     if (!isUserAuth()) {
       console.log('user is not authenticated');
       router.push('/login');
     } else {
       fetchEvents();
       console.log('user is authenticated');
+    
+    const today = new Date();
+    const filteredEvents = eventList.filter(event => {
+      const eventDate = new Date(event.start);
+      return (
+        today.getFullYear() === eventDate.getFullYear() &&
+        today.getMonth() === eventDate.getMonth() &&
+        today.getDate() === eventDate.getDate()
+      );
+    });
+    setTodayEvents(filteredEvents);
     }
-
-  }, [isUserAuth]);
-
-  const getEventColor = (eventType) =>{
-    switch (eventType) {
-      case 'Conferencia':
-        return '#097969';
-      case 'Taller':
-        return '#00A36C';
-      case 'Seminario':
-        return '#088F8F';
-      default:
-        return '#097969';
-    }
-  }
+  }, [eventList]);
 
   const fetchEvents = async () => {
     try {
@@ -56,9 +55,9 @@ export default function CalendarPage({ title }) {
       if (response.ok) {
         const data = await response.json();
         const transformedEvents = data.map(event => ({
-          title: event.title,
-          start: event.startDate, // Use startDate from your API response
-          end: event.startDate, // Assuming you have an endDate field in your API response
+          ...event,
+          start: new Date(event.startDate), // Convert to Date object
+          end: new Date(event.endDate), // Convert to Date object
         }));
         setEventList(transformedEvents);
       } else {
@@ -69,7 +68,6 @@ export default function CalendarPage({ title }) {
     }
   };
 
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEventData({
@@ -79,11 +77,8 @@ export default function CalendarPage({ title }) {
   };
 
   const handleFormSubmit = () => {
-    // Add event to the event list
     setEventList([...eventList, eventData]);
-    // Close the modal after submission
     setShowModal(false);
-    // Reset form data
     setEventData({
       title: '',
       start: '',
@@ -93,12 +88,16 @@ export default function CalendarPage({ title }) {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    // Reset form data when modal closes
     setEventData({
       title: '',
       start: '',
       end: ''
     });
+  };
+
+  const handleEventClick = (eventClickInfo) => {
+    // Redirect to details page with event details
+    router.push(`/details/${eventClickInfo.event.id}`);
   };
 
   return (
@@ -107,30 +106,22 @@ export default function CalendarPage({ title }) {
         <div className="row justify-content-end mt-5">
           <div className="mb-5 mb-xl-0 col-xl-3">
             <div className="shadow card h-100">
-              <div className="card-body ">
+            <div className="card-body ">
                 <h2>Today's List</h2>
-                <ul>
-                  {eventList.filter(event => {
-                    // Get today's date
-                    const today = new Date('2024-01-19T10:00:00.000Z');
-                    // Get event's date
-                    const eventDate = new Date(event.start);
-                    // Compare dates (year, month, and day)
-                    return (
-                      today.getFullYear() === eventDate.getFullYear() &&
-                      today.getMonth() === eventDate.getMonth() &&
-                      today.getDate() === eventDate.getDate()
-                    );
-                  }).map((event, index) => (
-                    <li key={index}>
-                      {event.title}
-                      <br />
-                      {event.start} to {event.end}
-                    </li>
-                  ))}
-                </ul>
+                {todayEvents.length === 0 ? (
+                  <h5 className='text-center'>No events for today</h5>
+                ) : (
+                  <ul>
+                    {todayEvents.map((event, index) => (
+                      <li key={index}>
+                        {event.title}
+                        <br />
+                        {event.start.toLocaleString()} to {event.end.toLocaleString()}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-
             </div>
           </div>
           <div className="mb-5 mb-xl-0 col-xl-9">
@@ -150,7 +141,8 @@ export default function CalendarPage({ title }) {
                     }
                   }}
                   initialView="dayGridMonth"
-                  events={eventList} // Set events from eventList
+                  events={eventList}
+                  eventClick={handleEventClick} // Handle event click
                 />
               </div>
             </div>
