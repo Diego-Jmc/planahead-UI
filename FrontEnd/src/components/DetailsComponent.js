@@ -4,6 +4,9 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import Cookies from 'js-cookie'
 import axios from 'axios'
 import FileDisplay from './FileDisplay'
+import { useRouter } from 'next/navigation'
+import { Modal, Button, Form } from 'react-bootstrap'
+
 export default function DetailsPage({ title, eventId }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -13,13 +16,20 @@ export default function DetailsPage({ title, eventId }) {
     startDate: ""
   });
 
+  const router = useRouter();
   const [event, setEvent] = useState({})
   const [isLoading, setIsLoading] = useState(true);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formSuccessMessage, setFormSuccessMessage] = useState("");
   const [files, setFiles] = useState([])
   const [tasks, setTasks] = useState([])
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
+
+  const handleCloseConfirmationModal = () => {
+    setShowConfirmationModal(false)
+  }
+  
   useEffect(() => {
     const token = Cookies.get('plan_ahead_user_token');
     if (token != null) {
@@ -102,6 +112,29 @@ export default function DetailsPage({ title, eventId }) {
       console.error('Error submitting form:', error);
     }
   };
+
+  function handleDelete(){
+    setShowConfirmationModal(true)
+
+  }
+
+  function deleteEvent(){
+    const token = Cookies.get('plan_ahead_user_token');
+    axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/${eventId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (res.status == 200) {
+            router.push('/calendar')
+        }
+      })
+      .catch(err => {
+        console.log('Algo ocurrió');
+        setIsLoading(false);
+      });
+  }
 
   return (
     <Layout pageTitle={title}>
@@ -205,10 +238,31 @@ export default function DetailsPage({ title, eventId }) {
 
               </div>
               <button type="submit" className="btn btn-primary mt-5">Save</button>
+
+              <button type="button" onClick={handleDelete} className='btn btn-danger ml-2 mt-5'>Delete</button>
             </form>
           )}
+
         </div>
       </div>
+
+
+      <Modal show={showConfirmationModal} onHide={handleCloseConfirmationModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Delete Event</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          
+          <h2>Do you want to delete the event?</h2>
+          <p>You cannot undo this action!</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={deleteEvent}>
+              Delete event
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
     </Layout>
   );
 }
