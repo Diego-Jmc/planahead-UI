@@ -5,8 +5,6 @@ import Cookies from 'js-cookie'
 import axios from 'axios'
 import FileDisplay from './FileDisplay'
 
-
-
 export default function DetailsPage({ title, eventId }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -21,9 +19,9 @@ export default function DetailsPage({ title, eventId }) {
   const [formSuccess, setFormSuccess] = useState(false);
   const [formSuccessMessage, setFormSuccessMessage] = useState("");
   const [files, setFiles] = useState([]);
-  const [editMode, setEditMode] = useState(false); // State variable for edit mode
-
-  const [newTask, setNewTask] = useState(""); // State variable for new task input
+  const [editMode, setEditMode] = useState(false); 
+  const [selectedFiles, setSelectedFiles] = useState([]); 
+  const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
     const token = Cookies.get('plan_ahead_user_token');
@@ -54,6 +52,34 @@ export default function DetailsPage({ title, eventId }) {
     }
   }, [eventId]);
 
+
+  const handleFileChange = (e) => {
+    setSelectedFiles([...e.target.files]);
+  };
+
+  const saveFiles = async () => {
+    const token = Cookies.get('plan_ahead_user_token');
+    if (token != null) {
+      const data = new FormData();
+      selectedFiles.forEach(file => {
+        data.append('files', file);
+        data.append('filename', file.name); 
+        data.append('eventId', eventId);
+      });
+      try {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/files`, data, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        console.log('Files uploaded successfully:', response.data);
+      } catch (error) {
+        console.error('Error uploading files:', error);
+      }
+    }
+  };
+
   const handleInput = (e) => {
     const fieldName = e.target.name;
     const fieldValue = e.target.value;
@@ -83,20 +109,30 @@ export default function DetailsPage({ title, eventId }) {
         ...prevState,
         taskList: [...prevState.taskList, newTask]
       }));
-      setNewTask(""); // Clear the new task input field
+      setNewTask("");
     }
   };
 
   const submitForm = async (e) => {
     e.preventDefault();
-    if (!editMode) return; // Disable form submission if not in edit mode
+    if (!editMode) return; 
 
     const formURL = e.target.action;
     const data = new FormData();
 
+    // Append form data
     Object.entries(formData).forEach(([key, value]) => {
       data.append(key, value);
     });
+
+    // Append files
+    Array.from(e.target.elements['fileList'].files).forEach(file => {
+      data.append('files', file);
+    });
+
+    // Append filename and event ID
+    data.append('filename', formData.name); 
+    data.append('eventId', eventId);
 
     try {
       const response = await fetch(formURL, {
@@ -135,7 +171,7 @@ export default function DetailsPage({ title, eventId }) {
             <h1>Event details</h1>
           </div>
           <div className='col-md-6 col-sm-12'>
-            <button type="button" className="btn btn-secondary" onClick={toggleEditMode}>
+            <button type="button" className="btn btn-success" onClick={toggleEditMode}>
               {editMode ? "Cancel Edit" : "Edit"} {/* Toggle button text based on edit mode */}
             </button>
           </div>
@@ -173,6 +209,8 @@ export default function DetailsPage({ title, eventId }) {
                       disabled={!editMode} // Disable textarea based on edit mode
                     />
                   </div>
+                </div>
+                <div className='col-6'>
                   <div className="form-group mt-1">
                     <label htmlFor="type">Type of event</label>
                     <input
@@ -196,8 +234,6 @@ export default function DetailsPage({ title, eventId }) {
                       disabled={!editMode} // Disable input based on edit mode
                     />
                   </div>
-                </div>
-                <div className='col-6'>
                   <div className="form-group mt-1">
                     <label htmlFor="status">Status</label>
                     <select
@@ -245,7 +281,7 @@ export default function DetailsPage({ title, eventId }) {
                               />
                               <button
                                 type="button"
-                                className="btn btn-primary"
+                                className="btn btn-success"
                                 onClick={handleAddTask}
                                 disabled={!editMode}
                               >
@@ -261,6 +297,23 @@ export default function DetailsPage({ title, eventId }) {
                 <div className='col-sm-12 col-md-6'>
                   <div className="form-group mt-1">
                     <label htmlFor="fileList">Related Files</label>
+                    <br></br>
+                    {editMode &&
+                      <div>
+                        <input
+                          type="file"
+                          className="form-control-file mt-2"
+                          name="fileList"
+                          multiple
+                          onChange={handleFileChange}
+                        /> <br></br>
+                        {selectedFiles.length > 0 && (
+                          <button className="btn btn-success mt-2" onClick={saveFiles}>
+                            Upload Files
+                          </button>
+                        )}
+                      </div>
+                    }
                     {files.length !== 0 ? (
                       files.map((file, index) => (
                         <FileDisplay key={index} url={file.url} nombre={file.filename} />
@@ -271,7 +324,7 @@ export default function DetailsPage({ title, eventId }) {
                   </div>
                 </div>
               </div>
-              <button type="submit" className="btn btn-primary mt-5" disabled={!editMode}>
+              <button type="submit" className="btn btn-success mt-5" disabled={!editMode}>
                 Save {/* Enable Save button only in edit mode */}
               </button>
             </form>
