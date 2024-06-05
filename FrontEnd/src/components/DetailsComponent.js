@@ -1,26 +1,60 @@
 import Layout from './Layuot'
-import React, { useState, useEffect } from 'react';
-import "bootstrap/dist/css/bootstrap.min.css";
-import { DatePicker } from "@nextui-org/react";
-import { now, getLocalTimeZone } from "@internationalized/date";
-
-export default function DetailsPage({ title }) {
+import React, { useState, useEffect } from 'react'
+import "bootstrap/dist/css/bootstrap.min.css"
+import Cookies from 'js-cookie'
+import axios from 'axios'
+import FileDisplay from './FileDisplay'
+export default function DetailsPage({ title, eventId }) {
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
-    message: "",
-<<<<<<< HEAD
-=======
+    description: "",
     type: "",
     status: "",
-    taskList: [],
-    fileList: ""
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
+    startDate: ""
   });
 
+  const [event, setEvent] = useState({})
+  const [isLoading, setIsLoading] = useState(true);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formSuccessMessage, setFormSuccessMessage] = useState("");
-<<<<<<< HEAD
+  const [files,setFiles] = useState([])
+  const [tasks,setTasks] = useState([])
+
+  useEffect(() => {
+    const token = Cookies.get('plan_ahead_user_token');
+    if (token != null) {
+      axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/${eventId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(res => {
+        if (res.status == 200) {
+
+          setFiles(res.data.files)
+          setTasks(res.data.tasks)
+          setFormData({
+            name: res.data.title,
+            description: res.data.description,
+            type: res.data.type,
+            status: res.data.completed,
+            startDate: new Date(res.data.startDate).toISOString().split('T')[0]
+          });
+          setIsLoading(false); 
+   
+        }
+      })
+      .catch(err => {
+        console.log('Algo ocurrió');
+        setIsLoading(false); 
+      });
+    }
+  }, [eventId]); 
+
+  if (isLoading) {
+    return <p>Cargando...</p>
+  }
+
 
   const handleInput = (e) => {
     const fieldName = e.target.name;
@@ -32,36 +66,6 @@ export default function DetailsPage({ title }) {
     }));
   };
 
-=======
-  const [editMode, setEditMode] = useState(false);
-  const [newTask, setNewTask] = useState("");
-
-  const handleInput = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  const handleTaskInputChange = (e, index) => {
-    const newTaskList = [...formData.taskList];
-    newTaskList[index] = e.target.value;
-    setFormData(prevState => ({
-      ...prevState,
-      taskList: newTaskList
-    }));
-  };
-
-  const handleAddTask = () => {
-    setFormData(prevState => ({
-      ...prevState,
-      taskList: [...prevState.taskList, newTask],
-    }));
-    setNewTask("");
-  };
-
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
   const submitForm = async (e) => {
     e.preventDefault();
 
@@ -69,17 +73,7 @@ export default function DetailsPage({ title }) {
     const data = new FormData();
 
     Object.entries(formData).forEach(([key, value]) => {
-<<<<<<< HEAD
       data.append(key, value);
-=======
-      if (key === "taskList") {
-        value.forEach((task, index) => {
-          data.append(`taskList[${index}]`, task);
-        });
-      } else {
-        data.append(key, value);
-      }
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
     });
 
     try {
@@ -95,15 +89,9 @@ export default function DetailsPage({ title }) {
         const responseData = await response.json();
         setFormData({
           name: "",
-          email: "",
-          message: "",
-<<<<<<< HEAD
-=======
+          description: "",
           type: "",
           status: "",
-          taskList: [],
-          fileList: []
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
         });
         setFormSuccess(true);
         setFormSuccessMessage(responseData.submission_text);
@@ -115,39 +103,19 @@ export default function DetailsPage({ title }) {
     }
   };
 
-<<<<<<< HEAD
-=======
-  const handleEditClick = () => {
-    editMode == true ? setEditMode(false) : setEditMode(true); 
-  };
-
-
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
   return (
     <Layout pageTitle={title}>
       <div className='min-h-screen flex flex-col'>
         <div className="m-auto row">
-          <div className="col-md-6  col-sm-12">
-<<<<<<< HEAD
-
+          <div className="col-md-6 col-sm-12">
             <h1>Event details</h1>
           </div>
           <div className='col-md-6 col-sm-12'>
             <button type="button" className="btn btn-secondary">
-=======
-            <h1>Event details</h1>
-          </div>
-          <div className='col-md-6 col-sm-12'>
-            <button type="button" className="btn btn-success" onClick={handleEditClick} >
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-pencil-fill" viewBox="0 0 16 16">
                 <path d="M4.5 13.793l-1.5 1.5v.707h.707l1.5-1.5-.707-.707zm9-9l-11 11-3 1 1-3 11-11 3-1-1 3zm-10.586 9.378l9-9 .707.707-9 9-.707-.707z" />
               </svg>
             </button>
-<<<<<<< HEAD
-
-=======
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
           </div>
           {formSuccess ? (
             <div>{formSuccessMessage}</div>
@@ -160,142 +128,80 @@ export default function DetailsPage({ title }) {
                 <div className='col-6'>
                   <div className="form-group mt-1">
                     <label htmlFor="name">Title</label>
-<<<<<<< HEAD
                     <input type="text" className="form-control" name="name" value={formData.name} placeholder="Enter Title" onChange={handleInput} />
                   </div>
                   <div className="form-group mt-1">
-                    <label htmlFor="email">Description</label>
-                    <input type="email" className="form-control" name="email" value={formData.email} aria-describedby="emailHelp" placeholder="Enter Description" onChange={handleInput} />
+                    <label htmlFor="description">Description</label>
+                    <textarea
+                      className="form-control"
+                      name="description"
+                      value={formData.description}
+                      placeholder="Enter Description"
+                      onChange={handleInput}
+                      rows={4}
+                      spellCheck={false}
+                    />
                   </div>
+
                   <div className="form-group mt-1">
-                    <label htmlFor="email">Tipo de evento</label>
-                    <input type="email" className="form-control" name="type" placeholder="Event type" onChange={handleInput} />
+                    <label htmlFor="type">Tipo de evento</label>
+                    <input type="text" className="form-control" name="type" value={formData.type} placeholder="Event type" onChange={handleInput} />
                   </div>
-                  <div className="form-group mt-1">
-                    <label htmlFor="message">Created At</label>
-=======
-                    <input type="text" className="form-control" name="name" value={formData.name} placeholder="Enter Title" onChange={handleInput} disabled={!editMode} />
-                  </div>
-                  <div className="form-group mt-1">
-                    <label htmlFor="email">Description</label>
-                    <input type="email" className="form-control" name="email" value={formData.email} aria-describedby="emailHelp" placeholder="Enter Description" onChange={handleInput} disabled={!editMode} />
-                  </div>
-                  <div className="form-group mt-1">
-                    <label htmlFor="type">Event Type</label>
-                    <input type="text" className="form-control" name="type" value={formData.type} placeholder="Enter Event Type" onChange={handleInput} disabled={!editMode} />
-                  </div>
-                </div>
-                <div className='col-6'>
                   <div className="form-group mt-1">
                     <label htmlFor="createdAt">Created At</label>
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
-                    <div className="w-full max-w-xl flex flex-row gap-4">
-                      <DatePicker
-                        label="Event Date"
-                        variant="bordered"
-                        hideTimeZone
-                        showMonthAndYearPickers
-<<<<<<< HEAD
-                        defaultValue={now(getLocalTimeZone())}
-                      />
-                    </div>
+                    <input
+                      type="date"
+                      className="form-control"
+                      name="startDate"
+                      value={formData.startDate}
+                      onChange={handleInput}
+                    />
                   </div>
+
                 </div>
                 <div className='col-6'>
                   <div className="form-group mt-1">
                     <label htmlFor="status">Status</label>
                     <select className="form-control" name="status" value={formData.status} onChange={handleInput}>
-=======
-                        value={formData.createdAt}
-                        onChange={(date) => setFormData(prevState => ({ ...prevState, createdAt: date }))}
-                        disabled={!editMode}
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group mt-1">
-                    <label htmlFor="status">Status</label>
-                    <select className="form-control" name="status" value={formData.status} onChange={handleInput} disabled={!editMode}>
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
-                      <option value="">Select Status</option>
-                      <option value="complete">Complete</option>
-                      <option value="incomplete">Incomplete</option>
+                      {
+                        formData.status == true ? <option value="complete" defaultChecked="true" >Complete</option> : <option value="incomplete">Incomplete</option>
+                      }
+
+                      {
+                        formData.status == false ? <option value="complete" >Complete</option> : <option value="incomplete" defaultChecked="true" >Incomplete</option>
+                      }
+
                     </select>
                   </div>
-<<<<<<< HEAD
                   <div className="form-group mt-1 h-75">
-                    <label htmlFor="message">Task List</label>
-                    <input type="text" className="form-control h-100" name="name" placeholder="Task List here" onChange={handleInput} />
-                    {/* Render your list of tasks here */}
+                    <label htmlFor="taskList">Task List</label>
+                    {
+                      tasks.length != 0?  tasks.map(e=>{
+                        return <div>
+                        {e.name}
+                        </div>
+                      }) :
+                      
+                      <p>No tasks for this event</p>
+                    }
+                    
                   </div>
                 </div>
                 <div className='row mt-3'>
                   <div className="form-group mt-1">
-                    <label htmlFor="message">Related Files</label>
-                    <input type="text" className="form-control" name="name" placeholder="File List here" onChange={handleInput} />
-                    {/* Render your list of related files here */}
+                    <label htmlFor="relatedFiles">Related Files</label>
+                      {
+                        files.map(e=>{
+                          return <FileDisplay url={e.url} nombre={e.filename} ></FileDisplay>
+                        })
+                      }
                   </div>
+
                 </div>
+
+              
               </div>
               <button type="submit" className="btn btn-primary mt-5">Save</button>
-=======
-                </div>
-                <hr className='mt-4'></hr>
-                <div className='row mt-3'>
-                  <div className='col-sm-12 col-md-6'>
-
-                  <div className="form-group mt-1 h-75">
-                    <label htmlFor="taskList">Task List</label>
-                    <table className="table">
-                      <tbody>
-                        {formData.taskList.map((task, index) => (
-                          <tr key={index}>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={task}
-                                onChange={(e) => handleTaskInputChange(e, index)}
-                                disabled={!editMode}
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                        <tr>
-                          <td>
-                            <div className="input-group">
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={newTask}
-                                onChange={(e) => setNewTask(e.target.value)}
-                                disabled={!editMode}
-                              />
-                              <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={handleAddTask}
-                                disabled={!editMode}
-                              >
-                                Add Task
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  </div>
-                  <div className='col-sm-12 col-md-6'>
-                    <div className="form-group mt-1">
-                    <label htmlFor="fileList">Related Files</label>
-                    <textarea className="form-control" name="fileList" value={formData.fileList} placeholder="Enter File List" onChange={handleInput} disabled={!editMode} />
-                  </div>
-                  </div>
-                  
-                </div>
-              </div>
-              <button type="submit" className={`btn btn-primary mt-5 ${editMode ? '' : 'disabled'}`} disabled={!editMode}>Save</button>
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
             </form>
           )}
         </div>
@@ -303,7 +209,3 @@ export default function DetailsPage({ title }) {
     </Layout>
   );
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> 3604bfa10ae7c35411599600db3af109197f2d79
