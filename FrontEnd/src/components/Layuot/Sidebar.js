@@ -74,12 +74,12 @@ export default function Sidebar({ show, setter }) {
                     />
                     <MenuItem
                         name="About Us"
-                        route="/"
+                        route="/about"
                         icon={<BsInfoSquare />}
                     />
                     <MenuItem
                         name="Contact"
-                        route="/"
+                        route="/contact"
                         icon={<BsEnvelopeAt />}
                     />
                 </div>
