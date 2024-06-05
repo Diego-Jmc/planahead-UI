@@ -40,14 +40,11 @@ export default function HomePage({ title }) {
                     setUncompletedEvents(events.filter(e=> !e.completed).length)
                     setTotalEvents(events.length)
                     setEventList(events)
-
                 }
             })
             .catch(err=>{
                 console.log(err)
             })
-
-            
         }
 
     }, [isUserAuth,setEventList]);
@@ -149,52 +146,8 @@ export default function HomePage({ title }) {
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Top categories</h6>
-                            </div>
-                            <div className="card-body">
-              
-                                <h4 className="small font-weight-bold">
-                                    Seminario <span className="float-right">{eventList.filter(e=> e.type == "Seminario").length}</span>
-                                </h4>
-                                <div className="progress mb-4">
-                                    <div className="progress-bar bg-danger" role="progressbar" style={{ width: '100%' }} aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <h4 className="small font-weight-bold">
-                                    Taller <span className="float-right">{eventList.filter(e=> e.type == "Taller").length}</span>
-                                </h4>
-                                <div className="progress mb-4">
-                                    <div className="progress-bar bg-warning" role="progressbar" style={{ width: '100%' }} aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <h4 className="small font-weight-bold">
-                                    Jornada <span className="float-right">{eventList.filter(e=> e.type == "Jornada").length}</span>
-                                </h4>
-                                <div className="progress mb-4">
-                                    <div className="progress-bar" role="progressbar" style={{ width: '100%' }} aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <h4 className="small font-weight-bold">
-                                    Conferencia <span className="float-right">{eventList.filter(e=> e.type == "Conferencia").length}</span>
-                                </h4>
-                                <div className="progress mb-4">
-                                    <div className="progress-bar bg-info" role="progressbar" style={{ width: '100%' }} aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            
-                            </div>
-
-                        </div>
-
-                    </div>
 
                 </div>
-
-
-                <div className='row d-flex' >
-
-
-                </div>
-
             </div>
 
         </Layout>
