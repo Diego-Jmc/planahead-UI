@@ -48,7 +48,7 @@ export default function CalendarPage({ title }) {
   const fetchEvents = async () => {
     try {
       const token = Cookies.get('plan_ahead_user_token');
-      const response = await fetch('http://localhost:3001/api/events', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
