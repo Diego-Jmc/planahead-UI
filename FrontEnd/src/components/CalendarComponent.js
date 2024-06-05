@@ -11,8 +11,10 @@ import isUserAuth from '../utils/auth'
 import Cookies from "js-cookie"
 
 export default function CalendarPage({ title }) {
-  const router = useRouter()
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+
+  const [todayEvents, setTodayEvents] = useState([]);
   const [eventData, setEventData] = useState({
     title: '',
     start: '',
@@ -21,16 +23,25 @@ export default function CalendarPage({ title }) {
   const [eventList, setEventList] = useState([]);
 
   useEffect(() => {
-
     if (!isUserAuth()) {
       console.log('user is not authenticated');
       router.push('/login');
     } else {
       fetchEvents();
       console.log('user is authenticated');
+    
+    const today = new Date();
+    const filteredEvents = eventList.filter(event => {
+      const eventDate = new Date(event.start);
+      return (
+        today.getFullYear() === eventDate.getFullYear() &&
+        today.getMonth() === eventDate.getMonth() &&
+        today.getDate() === eventDate.getDate()
+      );
+    });
+    setTodayEvents(filteredEvents);
     }
-
-  }, [isUserAuth]);
+  }, [eventList]);
 
   const getEventColor = (eventType) =>{
     switch (eventType) {
@@ -79,11 +90,8 @@ export default function CalendarPage({ title }) {
   };
 
   const handleFormSubmit = () => {
-    // Add event to the event list
     setEventList([...eventList, eventData]);
-    // Close the modal after submission
     setShowModal(false);
-    // Reset form data
     setEventData({
       title: '',
       start: '',
@@ -93,12 +101,16 @@ export default function CalendarPage({ title }) {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    // Reset form data when modal closes
     setEventData({
       title: '',
       start: '',
       end: ''
     });
+  };
+
+  const handleEventClick = (eventClickInfo) => {
+    // Redirect to details page with event details
+    router.push(`/details/${eventClickInfo.event.id}`);
   };
 
   return (
@@ -150,7 +162,8 @@ export default function CalendarPage({ title }) {
                     }
                   }}
                   initialView="dayGridMonth"
-                  events={eventList} // Set events from eventList
+                  events={eventList}
+                  eventClick={handleEventClick} // Handle event click
                 />
               </div>
             </div>
