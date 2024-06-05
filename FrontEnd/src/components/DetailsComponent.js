@@ -24,6 +24,11 @@ export default function DetailsPage({ title, eventId }) {
 
   const [newTask, setNewTask] = useState("");
 
+
+  const handleCloseConfirmationModal = () => {
+    setShowConfirmationModal(false)
+  }
+  
   useEffect(() => {
     const token = Cookies.get('plan_ahead_user_token');
     if (token != null) {
@@ -156,6 +161,29 @@ export default function DetailsPage({ title, eventId }) {
       console.error('Error submitting form:', error);
     }
   };
+
+  function handleDelete(){
+    setShowConfirmationModal(true)
+
+  }
+
+  function deleteEvent(){
+    const token = Cookies.get('plan_ahead_user_token');
+    axios.delete(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/${eventId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (res.status == 200) {
+            router.push('/calendar')
+        }
+      })
+      .catch(err => {
+        console.log('Algo ocurrió');
+        setIsLoading(false);
+      });
+  }
 
   return (
     <Layout pageTitle={title}>
@@ -325,8 +353,27 @@ export default function DetailsPage({ title, eventId }) {
               </button>
             </form>
           )}
+
         </div>
       </div>
+
+
+      <Modal show={showConfirmationModal} onHide={handleCloseConfirmationModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Delete Event</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          
+          <h2>Do you want to delete the event?</h2>
+          <p>You cannot undo this action!</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={deleteEvent}>
+              Delete event
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
     </Layout>
   );
 }
