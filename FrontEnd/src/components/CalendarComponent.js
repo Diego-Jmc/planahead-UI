@@ -8,10 +8,13 @@ import interactionPlugin from "@fullcalendar/interaction";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from 'next/navigation'
 import isUserAuth from '../utils/auth'
+import Cookies from "js-cookie"
 
 export default function CalendarPage({ title }) {
-  const router = useRouter()
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+
+  const [todayEvents, setTodayEvents] = useState([]);
   const [eventData, setEventData] = useState({
     title: '',
     start: '',
@@ -20,23 +23,54 @@ export default function CalendarPage({ title }) {
   const [eventList, setEventList] = useState([]);
 
   useEffect(() => {
-
     if (!isUserAuth()) {
-      console.log('user is not authenticated');
       router.push('/login');
     } else {
       fetchEvents();
-      console.log('user is authenticated');
-    }
 
-  }, [isUserAuth]);
+    const today = new Date();
+    const filteredEvents = eventList.filter(event => {
+      const eventDate = new Date(event.start);
+      return (
+        today.getFullYear() === eventDate.getFullYear() &&
+        today.getMonth() === eventDate.getMonth() &&
+        today.getDate() === eventDate.getDate()
+      );
+    });
+    setTodayEvents(filteredEvents);
+    }
+  }, [eventList]);
+
+  const getEventColor = (eventType) =>{
+    switch (eventType) {
+      case 'Conferencia':
+        return '#097969';
+      case 'Taller':
+        return '#00A36C';
+      case 'Seminario':
+        return '#088F8F';
+      default:
+        return '#097969';
+    }
+  }
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/getPopulated'); // Corrected fetch URL
+      const token = Cookies.get('plan_ahead_user_token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
-        setEventList(data);
+        const transformedEvents = data.map(event => ({
+          title: event.title,
+          start: event.startDate, 
+          end: event.startDate, 
+          id:event.id
+        }));
+        setEventList(transformedEvents);
       } else {
         console.error('Failed to fetch events:', response.statusText);
       }
@@ -44,6 +78,7 @@ export default function CalendarPage({ title }) {
       console.error('Error fetching events:', error);
     }
   };
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -54,11 +89,8 @@ export default function CalendarPage({ title }) {
   };
 
   const handleFormSubmit = () => {
-    // Add event to the event list
     setEventList([...eventList, eventData]);
-    // Close the modal after submission
     setShowModal(false);
-    // Reset form data
     setEventData({
       title: '',
       start: '',
@@ -68,7 +100,6 @@ export default function CalendarPage({ title }) {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    // Reset form data when modal closes
     setEventData({
       title: '',
       start: '',
@@ -76,27 +107,46 @@ export default function CalendarPage({ title }) {
     });
   };
 
+  const handleEventClick = (eventClickInfo) => {
+    router.push(`/details/${eventClickInfo.event._def.publicId}`);
+  };
+
   return (
     <Layout pageTitle={title}>
       <div className="mx-3 my-3">
         <div className="row justify-content-end mt-5">
           <div className="mb-5 mb-xl-0 col-xl-3">
-            <div className="shadow card">
-              <div className="card-body">
+            <div className="shadow card h-100">
+              <div className="card-body ">
                 <h2>Today's List</h2>
                 <ul>
-                  {eventList.map((event, index) => (
+                  {eventList.filter(event => {
+                    // Get today's date
+                    const today = new Date('2024-01-19T10:00:00.000Z');
+                    // Get event's date
+                    const eventDate = new Date(event.start);
+                    // Compare dates (year, month, and day)
+                    return (
+                      today.getFullYear() === eventDate.getFullYear() &&
+                      today.getMonth() === eventDate.getMonth() &&
+                      today.getDate() === eventDate.getDate()
+                    );
+                  }).map((event, index) => (
                     <li key={index}>
-                      {event.title} - {event.start} to {event.end}
+                      {event.title}
+                      <br />
+                      {event.start} to {event.end}
                     </li>
                   ))}
                 </ul>
               </div>
+
             </div>
           </div>
           <div className="mb-5 mb-xl-0 col-xl-9">
             <div className="shadow card h-100  w-100 d-inline-block">
               <div className="card-body">
+                
                 <Calendar
                   plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
                   headerToolbar={{
@@ -106,13 +156,16 @@ export default function CalendarPage({ title }) {
                   }}
                   customButtons={{
                     addEvent: {
-                      text: 'add event',
+                      text: 'Add event',
                       click: () => setShowModal(true)
                     }
                   }}
                   initialView="dayGridMonth"
-                  events={eventList} // Set events from eventList
+                  events={eventList}
+                  eventClick={handleEventClick}  
                 />
+
+
               </div>
             </div>
           </div>
