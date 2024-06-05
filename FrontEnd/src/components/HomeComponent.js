@@ -14,6 +14,7 @@ export default function HomePage({ title }) {
     const [completedEvents,setCompletedEvents] = useState(0)
     const [uncompletedEvents,setUncompletedEvents] = useState(0)
     const [totalEvents,setTotalEvents] = useState(0)
+    const [eventList,setEventList] = useState()
 
     function getPorcenteOfCompletedEvents(){
         const porcentage =  ( completedEvents / totalEvents ) * 100 
@@ -38,16 +39,15 @@ export default function HomePage({ title }) {
                     setCompletedEvents(events.filter(e=> e.completed).length)
                     setUncompletedEvents(events.filter(e=> !e.completed).length)
                     setTotalEvents(events.length)
-                    setMonts(countEventsByMonth(events))
+                    setEventList(events)
                 }
             })
             .catch(err=>{
                 console.log(err)
             })
-
         }
 
-    }, [isUserAuth]);
+    }, [isUserAuth,setEventList]);
 
 
     return (
@@ -141,64 +141,13 @@ export default function HomePage({ title }) {
 
                             <div class="card-body">
                                 <div class="chart-area">
-
-
                                     <LinesChart></LinesChart>
-                                   
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Tasks</h6>
-                            </div>
-                            <div className="card-body">
-                                <h4 className="small font-weight-bold">
-                                    Server Migration <span className="float-right">20</span>
-                                </h4>
-                                <div className="progress mb-4">
-                                    <div className="progress-bar bg-danger" role="progressbar" style={{ width: '20%' }} aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <h4 className="small font-weight-bold">
-                                    Sales Tracking <span className="float-right">40</span>
-                                </h4>
-                                <div className="progress mb-4">
-                                    <div className="progress-bar bg-warning" role="progressbar" style={{ width: '40%' }} aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <h4 className="small font-weight-bold">
-                                    Customer Database <span className="float-right">60</span>
-                                </h4>
-                                <div className="progress mb-4">
-                                    <div className="progress-bar" role="progressbar" style={{ width: '60%' }} aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <h4 className="small font-weight-bold">
-                                    Payout Details <span className="float-right">80</span>
-                                </h4>
-                                <div className="progress mb-4">
-                                    <div className="progress-bar bg-info" role="progressbar" style={{ width: '80%' }} aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <h4 className="small font-weight-bold">
-                                    Account Setup <span className="float-right">Complete!</span>
-                                </h4>
-                                <div className="progress">
-                                    <div className="progress-bar bg-success" role="progressbar" style={{ width: '100%' }} aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </div>
 
                 </div>
-
-
-                <div className='row d-flex' >
-
-
-                </div>
-
             </div>
 
         </Layout>

@@ -1,103 +1,109 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import Layout from './Layuot'
-import { Modal, Button, Form } from 'react-bootstrap';
-import Calendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { Modal, Button, Form } from 'react-bootstrap'
+import Calendar from "@fullcalendar/react"
+import dayGridPlugin from "@fullcalendar/daygrid"
+import timeGridPlugin from "@fullcalendar/timegrid"
+import interactionPlugin from "@fullcalendar/interaction"
+import "bootstrap/dist/css/bootstrap.min.css"
 import { useRouter } from 'next/navigation'
 import isUserAuth from '../utils/auth'
 import Cookies from "js-cookie"
-
+import axios from 'axios'
 export default function CalendarPage({ title }) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [userId,setUserId] = useState("")
 
   const [todayEvents, setTodayEvents] = useState([]);
   const [eventData, setEventData] = useState({
-    title: '',
-    start: '',
-    end: ''
+    title: "",
+    description: "",
+    type: "",
+    startDate: "",
+    completed: false,
   });
+
   const [eventList, setEventList] = useState([]);
 
   useEffect(() => {
     if (!isUserAuth()) {
       router.push('/login');
     } else {
-      fetchEvents();
-
-    const today = new Date();
-    const filteredEvents = eventList.filter(event => {
-      const eventDate = new Date(event.start);
-      return (
-        today.getFullYear() === eventDate.getFullYear() &&
-        today.getMonth() === eventDate.getMonth() &&
-        today.getDate() === eventDate.getDate()
-      );
-    });
-    setTodayEvents(filteredEvents);
+      fetchEvents();  
+      setUserId(Cookies.get('plan_ahead_user_id'))
+      eventData.userId= userId
+      const today = new Date();
+      const filteredEvents = eventList.filter(event => {
+        const eventDate = new Date(event.start);
+        return (
+          today.getFullYear() === eventDate.getFullYear() &&
+          today.getMonth() === eventDate.getMonth() &&
+          today.getDate() === eventDate.getDate()
+        );
+      });
+      setTodayEvents(filteredEvents);
     }
-  }, [eventList]);
-
-  const getEventColor = (eventType) =>{
-    switch (eventType) {
-      case 'Conferencia':
-        return '#097969';
-      case 'Taller':
-        return '#00A36C';
-      case 'Seminario':
-        return '#088F8F';
-      default:
-        return '#097969';
-    }
-  }
+  }, [eventList,userId]);
 
   const fetchEvents = async () => {
     try {
       const token = Cookies.get('plan_ahead_user_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/users/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json()
         const transformedEvents = data.map(event => ({
           title: event.title,
-          start: event.startDate, 
-          end: event.startDate, 
-          id:event.id
+          start: event.startDate,
+          end: event.startDate,
+          id: event.id
         }));
         setEventList(transformedEvents);
       } else {
-        console.error('Failed to fetch events:', response.statusText);
+        console.error('Failed to fetch events:', response.statusText)
       }
     } catch (error) {
-      console.error('Error fetching events:', error);
+      console.error('Error fetching events:', error)
     }
   };
 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    const updatedValue = name === 'startDate' ? new Date(value).toISOString() : value;
     setEventData({
       ...eventData,
-      [name]: value
+      [name]: updatedValue
     });
   };
+
 
   const handleFormSubmit = () => {
-    setEventList([...eventList, eventData]);
+    setEventList([...eventList, eventData])
     setShowModal(false);
-    setEventData({
-      title: '',
-      start: '',
-      end: ''
-    });
-  };
+    
 
+    const token = Cookies.get('plan_ahead_user_token');
+
+    axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/`, eventData, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (res.status === 200) {
+          console.log('evento agregado')
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    
+  }
   const handleCloseModal = () => {
     setShowModal(false);
     setEventData({
@@ -110,6 +116,8 @@ export default function CalendarPage({ title }) {
   const handleEventClick = (eventClickInfo) => {
     router.push(`/details/${eventClickInfo.event._def.publicId}`);
   };
+
+
 
   return (
     <Layout pageTitle={title}>
@@ -146,7 +154,6 @@ export default function CalendarPage({ title }) {
           <div className="mb-5 mb-xl-0 col-xl-9">
             <div className="shadow card h-100  w-100 d-inline-block">
               <div className="card-body">
-                
                 <Calendar
                   plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
                   headerToolbar={{
@@ -162,7 +169,7 @@ export default function CalendarPage({ title }) {
                   }}
                   initialView="dayGridMonth"
                   events={eventList}
-                  eventClick={handleEventClick}  
+                  eventClick={handleEventClick}
                 />
 
 
@@ -186,24 +193,35 @@ export default function CalendarPage({ title }) {
                   onChange={handleInputChange}
                 />
               </Form.Group>
-              <Form.Group controlId="formStart">
-                <Form.Label>Start Date</Form.Label>
+              <Form.Group controlId="formDescription">
+                <Form.Label>Description</Form.Label>
                 <Form.Control
-                  type="datetime-local"
-                  name="start"
-                  value={eventData.start}
+                  as="textarea"
+                  placeholder="Enter description"
+                  name="description"
+                  value={eventData.description}
                   onChange={handleInputChange}
                 />
               </Form.Group>
-              <Form.Group controlId="formEnd">
-                <Form.Label>End Date</Form.Label>
+              <Form.Group controlId="formType">
+                <Form.Label>Type</Form.Label>
                 <Form.Control
-                  type="datetime-local"
-                  name="end"
-                  value={eventData.end}
+                  type="text"
+                  placeholder="Enter type"
+                  name="type"
+                  value={eventData.type}
                   onChange={handleInputChange}
                 />
               </Form.Group>
+                <Form.Group controlId="formStartDate">
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={eventData.startDate}
+                    onChange={handleInputChange}
+                  />
+              </Form.Group>
+
             </Form>
           </Modal.Body>
           <Modal.Footer>

@@ -12,15 +12,16 @@ export default function DetailsPage({ title, eventId }) {
     type: "",
     status: "",
     startDate: "",
-    taskList: []
+    taskList: [] // Initialize taskList as an empty array
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formSuccessMessage, setFormSuccessMessage] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const [files, setFiles] = useState([]);
-  const [editMode, setEditMode] = useState(false); 
-  const [selectedFiles, setSelectedFiles] = useState([]); 
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
   const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
@@ -40,18 +41,17 @@ export default function DetailsPage({ title, eventId }) {
               type: res.data.type,
               status: res.data.completed,
               startDate: new Date(res.data.startDate).toISOString().split('T')[0],
-              taskList: res.data.tasks.map(task => task.name)
+              taskList: [] // Initialize taskList as an empty array
             });
             setIsLoading(false);
           }
         })
         .catch(err => {
-          console.log('Something went wrong');
+          console.log('Algo ocurrió');
           setIsLoading(false);
         });
     }
   }, [eventId]);
-
 
   const handleFileChange = (e) => {
     setSelectedFiles([...e.target.files]);
@@ -79,6 +79,10 @@ export default function DetailsPage({ title, eventId }) {
       }
     }
   };
+  if (isLoading) {
+    return <p>Cargando...</p>
+  }
+
 
   const handleInput = (e) => {
     const fieldName = e.target.name;
@@ -120,19 +124,9 @@ export default function DetailsPage({ title, eventId }) {
     const formURL = e.target.action;
     const data = new FormData();
 
-    // Append form data
     Object.entries(formData).forEach(([key, value]) => {
       data.append(key, value);
     });
-
-    // Append files
-    Array.from(e.target.elements['fileList'].files).forEach(file => {
-      data.append('files', file);
-    });
-
-    // Append filename and event ID
-    data.append('filename', formData.name); 
-    data.append('eventId', eventId);
 
     try {
       const response = await fetch(formURL, {
@@ -172,7 +166,9 @@ export default function DetailsPage({ title, eventId }) {
           </div>
           <div className='col-md-6 col-sm-12'>
             <button type="button" className="btn btn-success" onClick={toggleEditMode}>
-              {editMode ? "Cancel Edit" : "Edit"} {/* Toggle button text based on edit mode */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-pencil-fill" viewBox="0 0 16 16">
+                <path d="M4.5 13.793l-1.5 1.5v.707h.707l1.5-1.5-.707-.707zm9-9l-11 11-3 1 1-3 11-11 3-1-1 3zm-10.586 9.378l9-9 .707.707-9 9-.707-.707z" />
+              </svg>
             </button>
           </div>
           {formSuccess ? (
