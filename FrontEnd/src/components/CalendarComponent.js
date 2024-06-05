@@ -32,17 +32,35 @@ export default function CalendarPage({ title }) {
 
   }, [isUserAuth]);
 
+  const getEventColor = (eventType) =>{
+    switch (eventType) {
+      case 'Conferencia':
+        return '#097969';
+      case 'Taller':
+        return '#00A36C';
+      case 'Seminario':
+        return '#088F8F';
+      default:
+        return '#097969';
+    }
+  }
+
   const fetchEvents = async () => {
     try {
       const token = Cookies.get('plan_ahead_user_token');
-      const response = await fetch('http://localhost:3001/api/tasks', {
+      const response = await fetch('http://localhost:3001/api/events', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (response.ok) {
         const data = await response.json();
-        setEventList(data);
+        const transformedEvents = data.map(event => ({
+          title: event.title,
+          start: event.startDate, // Use startDate from your API response
+          end: event.startDate, // Assuming you have an endDate field in your API response
+        }));
+        setEventList(transformedEvents);
       } else {
         console.error('Failed to fetch events:', response.statusText);
       }
@@ -50,7 +68,7 @@ export default function CalendarPage({ title }) {
       console.error('Error fetching events:', error);
     }
   };
-  
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -88,17 +106,31 @@ export default function CalendarPage({ title }) {
       <div className="mx-3 my-3">
         <div className="row justify-content-end mt-5">
           <div className="mb-5 mb-xl-0 col-xl-3">
-            <div className="shadow card">
-              <div className="card-body">
+            <div className="shadow card h-100">
+              <div className="card-body ">
                 <h2>Today's List</h2>
                 <ul>
-                  {eventList.map((event, index) => (
+                  {eventList.filter(event => {
+                    // Get today's date
+                    const today = new Date('2024-01-19T10:00:00.000Z');
+                    // Get event's date
+                    const eventDate = new Date(event.start);
+                    // Compare dates (year, month, and day)
+                    return (
+                      today.getFullYear() === eventDate.getFullYear() &&
+                      today.getMonth() === eventDate.getMonth() &&
+                      today.getDate() === eventDate.getDate()
+                    );
+                  }).map((event, index) => (
                     <li key={index}>
-                      {event.title} - {event.start} to {event.end}
+                      {event.title}
+                      <br />
+                      {event.start} to {event.end}
                     </li>
                   ))}
                 </ul>
               </div>
+
             </div>
           </div>
           <div className="mb-5 mb-xl-0 col-xl-9">
