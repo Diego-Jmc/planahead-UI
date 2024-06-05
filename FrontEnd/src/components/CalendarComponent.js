@@ -11,10 +11,7 @@ import isUserAuth from '../utils/auth'
 import Cookies from "js-cookie"
 
 export default function CalendarPage({ title }) {
-<<<<<<< HEAD
   const router = useRouter()
-=======
->>>>>>> da81fa2 (style calendar and show muck data)
   const [showModal, setShowModal] = useState(false);
   const [eventData, setEventData] = useState({
     title: '',
@@ -22,7 +19,6 @@ export default function CalendarPage({ title }) {
     end: ''
   });
   const [eventList, setEventList] = useState([]);
-<<<<<<< HEAD
 
   useEffect(() => {
 
@@ -36,94 +32,44 @@ export default function CalendarPage({ title }) {
 
   }, [isUserAuth]);
 
+  const getEventColor = (eventType) =>{
+    switch (eventType) {
+      case 'Conferencia':
+        return '#097969';
+      case 'Taller':
+        return '#00A36C';
+      case 'Seminario':
+        return '#088F8F';
+      default:
+        return '#097969';
+    }
+  }
+
   const fetchEvents = async () => {
     try {
       const token = Cookies.get('plan_ahead_user_token');
-      const response = await fetch('http://localhost:3001/api/tasks', {
+      const response = await fetch('http://localhost:3001/api/events', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (response.ok) {
         const data = await response.json();
-        setEventList(data);
+        const transformedEvents = data.map(event => ({
+          title: event.title,
+          start: event.startDate, // Use startDate from your API response
+          end: event.startDate, // Assuming you have an endDate field in your API response
+        }));
+        setEventList(transformedEvents);
       } else {
         console.error('Failed to fetch events:', response.statusText);
       }
-=======
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
-      // Replace with your API logic if fetching from a server
-      // const response = await fetch('http://localhost:3001/api/tasks'); // Corrected fetch URL
-      // if (response.ok) {
-      //     const data = await response.json();
-      //     setEventList(data);
-      // } else {
-      //     console.error('Failed to fetch events:', response.statusText);
-      // }
-
-      const mockData = [
-        {
-          title: 'CS 344: Algorithms Lecture',
-          start: new Date('2024-05-08T09:00:00').toISOString(),
-          end: new Date('2024-05-08T10:30:00').toISOString(),
-          backgroundColor: '#ffc107',
-        },{
-          title: 'Chemistry Lab (Section A)',
-          start: new Date('2024-05-15T14:00:00').toISOString(),
-          end: new Date('2024-05-09T16:00:00').toISOString(),
-          backgroundColor: '#ffc107',
-        },{
-          title: 'Student Government Meeting',
-          start: new Date('2024-05-10T17:00:00').toISOString(),
-          end: new Date('2024-05-10T18:30:00').toISOString(),
-          backgroundColor: '#ffc107',
-        },{
-          title: 'Career Fair - Engineering & Tech',
-          start: new Date('2024-05-21T11:00:00').toISOString(),
-          end: new Date('2024-05-11T14:00:00').toISOString(),
-          backgroundColor: '#ffc107',
-        },{
-          title: 'Office Hours - Professor Smith (History)',
-          start: new Date('2024-05-13T12:00:00').toISOString(),
-          end: new Date('2024-05-13T13:00:00').toISOString(), // No formatting call here
-        },
-      ];
-      setEventList(mockData);
->>>>>>> da81fa2 (style calendar and show muck data)
     } catch (error) {
       console.error('Error fetching events:', error);
     }
   };
-  
 
-<<<<<<< HEAD
-=======
-  const formatDate = (dateString) => {
-    // Check if dateString is a valid date string
-    if (!dateString || isNaN(Date.parse(dateString))) {
-      return 'Invalid Date';
-    }
-    
-    const date = new Date(dateString); // Convert the date string to a Date object
-  
-    const options = {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    };
-  
-    return new Intl.DateTimeFormat('en-GB', options).format(date); // Format the date
-  };
 
->>>>>>> da81fa2 (style calendar and show muck data)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEventData({
@@ -160,23 +106,31 @@ export default function CalendarPage({ title }) {
       <div className="mx-3 my-3">
         <div className="row justify-content-end mt-5">
           <div className="mb-5 mb-xl-0 col-xl-3">
-            <div className="shadow card">
-              <div className="card-body">
+            <div className="shadow card h-100">
+              <div className="card-body ">
                 <h2>Today's List</h2>
                 <ul>
-                  {eventList.map((event, index) => (
+                  {eventList.filter(event => {
+                    // Get today's date
+                    const today = new Date('2024-01-19T10:00:00.000Z');
+                    // Get event's date
+                    const eventDate = new Date(event.start);
+                    // Compare dates (year, month, and day)
+                    return (
+                      today.getFullYear() === eventDate.getFullYear() &&
+                      today.getMonth() === eventDate.getMonth() &&
+                      today.getDate() === eventDate.getDate()
+                    );
+                  }).map((event, index) => (
                     <li key={index}>
-<<<<<<< HEAD
-                      {event.title} - {event.start} to {event.end}
-=======
-                      {event.title} <br>
-                      </br>- {formatDate(event.start)} to {formatDate(event.end)}
-                      <hr/>
->>>>>>> da81fa2 (style calendar and show muck data)
+                      {event.title}
+                      <br />
+                      {event.start} to {event.end}
                     </li>
                   ))}
                 </ul>
               </div>
+
             </div>
           </div>
           <div className="mb-5 mb-xl-0 col-xl-9">
