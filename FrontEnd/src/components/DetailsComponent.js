@@ -17,8 +17,8 @@ export default function DetailsPage({ title, eventId }) {
   const [isLoading, setIsLoading] = useState(true);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formSuccessMessage, setFormSuccessMessage] = useState("");
-  const [files,setFiles] = useState([])
-  const [tasks,setTasks] = useState([])
+  const [files, setFiles] = useState([])
+  const [tasks, setTasks] = useState([])
 
   useEffect(() => {
     const token = Cookies.get('plan_ahead_user_token');
@@ -28,28 +28,28 @@ export default function DetailsPage({ title, eventId }) {
           'Authorization': `Bearer ${token}`
         }
       })
-      .then(res => {
-        if (res.status == 200) {
+        .then(res => {
+          if (res.status == 200) {
 
-          setFiles(res.data.files)
-          setTasks(res.data.tasks)
-          setFormData({
-            name: res.data.title,
-            description: res.data.description,
-            type: res.data.type,
-            status: res.data.completed,
-            startDate: new Date(res.data.startDate).toISOString().split('T')[0]
-          });
-          setIsLoading(false); 
-   
-        }
-      })
-      .catch(err => {
-        console.log('Algo ocurrió');
-        setIsLoading(false); 
-      });
+            setFiles(res.data.files)
+            setTasks(res.data.tasks)
+            setFormData({
+              name: res.data.title,
+              description: res.data.description,
+              type: res.data.type,
+              status: res.data.completed,
+              startDate: new Date(res.data.startDate).toISOString().split('T')[0]
+            });
+            setIsLoading(false);
+
+          }
+        })
+        .catch(err => {
+          console.log('Algo ocurrió');
+          setIsLoading(false);
+        });
     }
-  }, [eventId]); 
+  }, [eventId]);
 
   if (isLoading) {
     return <p>Cargando...</p>
@@ -176,30 +176,33 @@ export default function DetailsPage({ title, eventId }) {
                   <div className="form-group mt-1 h-75">
                     <label htmlFor="taskList">Task List</label>
                     {
-                      tasks.length != 0?  tasks.map(e=>{
-                        return <div>
-                        {e.name}
-                        </div>
-                      }) :
-                      
-                      <p>No tasks for this event</p>
+                      tasks.length !== 0 ?
+                        tasks.map((task, index) => (
+                          <div key={index}>
+                            {task.name}
+                          </div>
+                        )) :
+                        <p>No tasks for this event</p>
                     }
-                    
+
                   </div>
                 </div>
                 <div className='row mt-3'>
                   <div className="form-group mt-1">
                     <label htmlFor="relatedFiles">Related Files</label>
-                      {
-                        files.map(e=>{
-                          return <FileDisplay url={e.url} nombre={e.filename} ></FileDisplay>
-                        })
-                      }
+                    {
+                      files.length !== 0 ?
+                        files.map((file, index) => (
+                          <FileDisplay key={index} url={file.url} nombre={file.filename} />
+                        )) :
+                        <p>No files for this event</p>
+                    }
+
                   </div>
 
                 </div>
 
-              
+
               </div>
               <button type="submit" className="btn btn-primary mt-5">Save</button>
             </form>

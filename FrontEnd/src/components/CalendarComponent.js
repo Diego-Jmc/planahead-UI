@@ -24,12 +24,10 @@ export default function CalendarPage({ title }) {
 
   useEffect(() => {
     if (!isUserAuth()) {
-      console.log('user is not authenticated');
       router.push('/login');
     } else {
       fetchEvents();
-      console.log('user is authenticated');
-    
+
     const today = new Date();
     const filteredEvents = eventList.filter(event => {
       const eventDate = new Date(event.start);
@@ -68,8 +66,9 @@ export default function CalendarPage({ title }) {
         const data = await response.json();
         const transformedEvents = data.map(event => ({
           title: event.title,
-          start: event.startDate, // Use startDate from your API response
-          end: event.startDate, // Assuming you have an endDate field in your API response
+          start: event.startDate, 
+          end: event.startDate, 
+          id:event.id
         }));
         setEventList(transformedEvents);
       } else {
@@ -109,8 +108,7 @@ export default function CalendarPage({ title }) {
   };
 
   const handleEventClick = (eventClickInfo) => {
-    // Redirect to details page with event details
-    router.push(`/details/${eventClickInfo.event.id}`);
+    router.push(`/details/${eventClickInfo.event._def.publicId}`);
   };
 
   return (
@@ -148,6 +146,7 @@ export default function CalendarPage({ title }) {
           <div className="mb-5 mb-xl-0 col-xl-9">
             <div className="shadow card h-100  w-100 d-inline-block">
               <div className="card-body">
+                
                 <Calendar
                   plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
                   headerToolbar={{
@@ -163,8 +162,10 @@ export default function CalendarPage({ title }) {
                   }}
                   initialView="dayGridMonth"
                   events={eventList}
-                  eventClick={handleEventClick} // Handle event click
+                  eventClick={handleEventClick}  
                 />
+
+
               </div>
             </div>
           </div>
