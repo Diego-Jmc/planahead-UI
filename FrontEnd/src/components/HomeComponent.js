@@ -45,6 +45,8 @@ export default function HomePage({ title }) {
             .catch(err=>{
                 console.log(err)
             })
+
+            
         }
 
     }, [isUserAuth,setEventList]);
