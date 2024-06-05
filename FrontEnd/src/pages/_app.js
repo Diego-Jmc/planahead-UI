@@ -1,6 +1,7 @@
 import '../assets/css/globals.css'
 import '../assets/css/page.module.css'
 import '../assets/css/dashboard.css'
+import '../assets/css/sidebar.css'
 
 import { Inter } from 'next/font/google'
 

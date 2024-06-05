@@ -1,20 +1,22 @@
 // @/components/Layout/Sidebar.js
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-
 import { SlHome } from 'react-icons/sl'
-import { BsInfoSquare, BsEnvelopeAt, BsCalendar2} from 'react-icons/bs'
-
+import { BsInfoSquare, BsEnvelopeAt, BsCalendar2,BsBoxArrowRight} from 'react-icons/bs'
 import logo from '../../assets/img/logo/logo.png'
-
+import Cookies from 'js-cookie'
 
 
 
 export default function Sidebar({ show, setter }) {
     const router = useRouter();
 
-    
+    function handleSingOut(){
+        Cookies.remove('plan_ahead_user_token')
+        Cookies.remove('plan_ahead_user_id')
+        router.push('/login')
+    }
 
     // Define our base class
     const className = "bg-[#0a6244] text-white w-[250px] transition-[margin-left] ease-in-out duration-500 fixed md:static top-0 bottom-0 left-0 z-40";
@@ -82,6 +84,12 @@ export default function Sidebar({ show, setter }) {
                         route="/"
                         icon={<BsEnvelopeAt />}
                     />
+
+                    <button class="sign-out-btn" onClick={handleSingOut}>
+                        SingOut
+                    </button>
+
+
                 </div>
             </div>
             {show ? <ModalOverlay /> : <></>}

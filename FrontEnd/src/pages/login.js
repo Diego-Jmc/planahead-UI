@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuth0 } from '@auth0/auth0-react'; 
 import crypto from 'crypto';
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
-
+import isUserAuth from '../utils/auth'
 const Container = styled.div`
   background-image: url('/background.jpg');
   background-size: cover;
@@ -96,6 +96,12 @@ const LoginPage = () => {
  const [email, setEmail] = useState('');
  const [password, setPassword] = useState('');
 
+
+ useEffect(()=>{
+  if(isUserAuth()){
+    router.push('/')
+  }
+ })
 
   // Use Auth0 hook
   const { loginWithRedirect, user } = useAuth0();
