@@ -144,10 +144,7 @@ export default function HomePage({ title }) {
 
                             <div class="card-body">
                                 <div class="chart-area">
-
-
                                     <LinesChart></LinesChart>
-                                   
                                 </div>
                             </div>
                         </div>
